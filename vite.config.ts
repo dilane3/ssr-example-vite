@@ -11,7 +11,7 @@ export default defineConfig({
       },
     },
     target: 'esnext',
-    outDir: 'dist',
+    outDir: 'dist/client',
     assetsDir: 'assets',
     // minify: 'terser',
     sourcemap: false,

@@ -10,5 +10,10 @@ export default defineConfig({
         main: "./index.html",
       },
     },
+    target: 'esnext',
+    outDir: 'dist',
+    assetsDir: 'assets',
+    minify: 'terser',
+    sourcemap: false,
   },
 });

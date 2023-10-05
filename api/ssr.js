@@ -13,10 +13,10 @@ export default async function handler(req, res) {
 
   // Cached production assets
   const templateHtml = isProduction
-    ? await fs.readFile("../dist/client/index.html", "utf-8")
+    ? await fs.readFile("/dist/client/index.html", "utf-8")
     : "";
   const ssrManifest = isProduction
-    ? await fs.readFile("../dist/client/ssr-manifest.json", "utf-8")
+    ? await fs.readFile("/dist/client/ssr-manifest.json", "utf-8")
     : undefined;
 
   try {
@@ -26,15 +26,17 @@ export default async function handler(req, res) {
     let render;
     if (!isProduction) {
       // Always read fresh template in development
-      template = await fs.readFile("../index.html", "utf-8");
+      template = await fs.readFile("/index.html", "utf-8");
       template = await vite.transformIndexHtml(url, template);
       render = (await vite.ssrLoadModule("/src/entry-server.tsx")).render;
     } else {
       template = templateHtml;
-      render = (await import("../dist/server/entry-server.js")).render;
+      render = (await import("/dist/server/entry-server.js")).render;
     }
 
     const rendered = await render(url, ssrManifest);
+
+    console.log("rendered", rendered)
 
     const html = template
       .replace(`<!--app-head-->`, rendered.head ?? "")

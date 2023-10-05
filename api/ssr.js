@@ -1,33 +1,58 @@
 import fs from "node:fs/promises";
-import { renderPage } from "vike/server";
+import express from "express";
+import os from "node:os";
 
-// We use JSDoc instead of TypeScript because Vercel seems buggy with /api/**/*.ts files
+// Constants
+const isProduction = process.env.NODE_ENV === "production";
 
-/**
- * @param {import('@vercel/node').VercelRequest} req
- * @param {import('@vercel/node').VercelResponse} res
- */
-export default async function handler(req, res) {
-  // Constants
-  const isProduction = process.env.NODE_ENV === "production";
+const base = process.env.BASE || "/";
 
-  // Cached production assets
-  const templateHtml = isProduction
-    ? await fs.readFile("/dist/client/index.html", "utf-8")
-    : "";
-  const ssrManifest = isProduction
-    ? await fs.readFile("/dist/client/ssr-manifest.json", "utf-8")
-    : undefined;
+// Cached production assets
+const templateHtml = isProduction
+  ? await fs.readFile("/dist/client/index.html", "utf-8")
+  : "";
+const ssrManifest = isProduction
+  ? await fs.readFile("/dist/client/ssr-manifest.json", "utf-8")
+  : undefined;
 
+// Create http server
+const app = express();
+
+// Add Vite or respective production middlewares
+let vite;
+if (!isProduction) {
+  const { createServer } = await import("vite");
+  vite = await createServer({
+    server: { middlewareMode: true },
+    appType: "custom",
+    base,
+  });
+  app.use(vite.middlewares);
+} else {
+  const compression = (await import("compression")).default;
+  const sirv = (await import("sirv")).default;
+  app.use(compression());
+  app.use(base, sirv("/dist/client", { extensions: [] }));
+}
+
+// Serve HTML
+app.use("*", async (req, res) => {
   try {
-    const url = req.originalUrl;
+    const url = req.originalUrl.replace(base, "/");
 
-    let template = templateHtml;
-    let render = (await import("/dist/server/entry-server.js")).render;
+    let template;
+    let render;
+    if (!isProduction) {
+      // Always read fresh template in development
+      template = await fs.readFile("/index.html", "utf-8");
+      template = await vite.transformIndexHtml(url, template);
+      render = (await vite.ssrLoadModule("/src/entry-server.tsx")).render;
+    } else {
+      template = templateHtml;
+      render = (await import("/dist/server/entry-server.js")).render;
+    }
 
     const rendered = await render(url, ssrManifest);
-
-    console.log("rendered", rendered);
 
     const html = template
       .replace(`<!--app-head-->`, rendered.head ?? "")
@@ -35,27 +60,35 @@ export default async function handler(req, res) {
 
     res.status(200).set({ "Content-Type": "text/html" }).end(html);
   } catch (e) {
+    vite?.ssrFixStacktrace(e);
     console.log(e.stack);
     res.status(500).end(e.stack);
   }
+});
 
-  // const { url } = req
-  // console.log('Request to url:', url)
-  // if (url === undefined) throw new Error('req.url is undefined')
+// Get local IP
+export const getIP = () => {
+  // Get network interfaces
+  const networkInterfaces = os.networkInterfaces();
 
-  // const pageContextInit = { urlOriginal: url }
-  // const pageContext = await renderPage(pageContextInit)
-  // const { httpResponse } = pageContext
-  // console.log('httpResponse', !!httpResponse)
+  // Find the IPv4 address for the default network interface
+  let ipAddress = "";
 
-  // if (!httpResponse) {
-  //   res.statusCode = 200
-  //   res.end()
-  //   return
-  // }
+  for (const interfaceName in networkInterfaces) {
+    const iface = networkInterfaces[interfaceName];
+    for (let i = 0; i < iface.length; i++) {
+      const alias = iface[i];
+      if (alias.family === "IPv4" && !alias.internal) {
+        ipAddress = alias.address;
+        break;
+      }
+    }
+    if (ipAddress) {
+      break;
+    }
+  }
 
-  // const { body, statusCode, contentType } = httpResponse
-  // res.statusCode = statusCode
-  // res.setHeader('content-type', contentType)
-  // res.end(body)
-}
+  return ipAddress;
+};
+
+module.exports = app;

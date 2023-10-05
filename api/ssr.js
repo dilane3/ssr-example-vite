@@ -9,10 +9,10 @@ const base = process.env.BASE || "/";
 
 // Cached production assets
 const templateHtml = isProduction
-  ? await fs.readFile("/dist/client/index.html", "utf-8")
+  ? await fs.readFile("../dist/client/index.html", "utf-8")
   : "";
 const ssrManifest = isProduction
-  ? await fs.readFile("/dist/client/ssr-manifest.json", "utf-8")
+  ? await fs.readFile("../dist/client/ssr-manifest.json", "utf-8")
   : undefined;
 
 // Create http server
@@ -32,7 +32,7 @@ if (!isProduction) {
   const compression = (await import("compression")).default;
   const sirv = (await import("sirv")).default;
   app.use(compression());
-  app.use(base, sirv("/dist/client", { extensions: [] }));
+  app.use(base, sirv("../dist/client", { extensions: [] }));
 }
 
 // Serve HTML
@@ -49,7 +49,7 @@ app.use("*", async (req, res) => {
       render = (await vite.ssrLoadModule("/src/entry-server.tsx")).render;
     } else {
       template = templateHtml;
-      render = (await import("/dist/server/entry-server.js")).render;
+      render = (await import("../dist/server/entry-server.js")).render;
     }
 
     const rendered = await render(url, ssrManifest);

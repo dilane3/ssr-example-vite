@@ -1,12 +1,12 @@
 {
   "routes": [
     {
-      "source": "/api/(.*)",
-      "destination": "api/ssr.js"
+      "src": "/api/(.*)",
+      "dest": "api/ssr.js"
     },
     {
-      "source": "/(.*)",
-      "destination": "/index.html"
+      "src": "/(.*)",
+      "dest": "/index.html"
     }
   ]
 }

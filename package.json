@@ -7,7 +7,7 @@
     "dev": "npm run rasengan:dev",
     "rasengan:dev": "node server",
     "rasengan:start": "cross-env NODE_ENV=production node server",
-    "build": "npm run build:client && npm run build:server",
+    "build": "npm run build:client && npm run build:server && cp server.js dist",
     "build:client": "vite build --ssrManifest --outDir dist/client",
     "build:server": "vite build --ssr src/entry-server.tsx --outDir dist/server",
     "preview": "npm run rasengan:start"

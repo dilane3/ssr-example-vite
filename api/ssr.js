@@ -96,4 +96,4 @@ export const getIP = () => {
   return ipAddress;
 };
 
-export default app;
+export default app.listen(3000);

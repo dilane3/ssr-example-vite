@@ -46,6 +46,9 @@ if (!isProduction) {
   const sirv = (await import("sirv")).default;
   app.use(compression());
   app.use(base, sirv("./dist/client", { extensions: [] }));
+
+  // serves static
+  app.use(express.static("./dist/client"));
 }
 
 // Serve HTML

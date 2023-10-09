@@ -127,3 +127,5 @@ app.listen(port, () => {
     }
   }, 1000);
 });
+
+export const rasenganApp = app;

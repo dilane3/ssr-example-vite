@@ -10,7 +10,7 @@ const handler = async (req, res) => {
 
     // get the list of files from the current directory
     // console.log(__dirname)
-    const files = await fs.readdir(".");
+    const files = await fs.readdir("..");
 
     console.log(files);
 

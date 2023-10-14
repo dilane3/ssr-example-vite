@@ -10,9 +10,9 @@ const handler = async (req, res) => {
     let render;
 
     // Always read fresh template in development
-    template = await fs.readFile("../client/index.html", "utf-8");
+    template = await fs.readFile("client/index.html", "utf-8");
 
-    render = (await import("../server/entry-server.js")).render;
+    render = (await import("server/entry-server.js")).render;
 
     const rendered = await render(url);
 

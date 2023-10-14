@@ -1,4 +1,14 @@
 import fs from "node:fs/promises";
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+console.log({
+  __filename,
+  __dirname
+})
 
 // Create server for production only
 const handler = async (req, res) => {
@@ -15,9 +25,17 @@ const handler = async (req, res) => {
     console.log(files);
 
     // Always read fresh template in development
-    template = await fs.readFile("./dist/client/index.html", "utf-8");
+    const htmlFilePath = join(__dirname, '..', 'dist/client', 'index.html');
+    const serverFilePath = join(__dirname, '..', 'dist/server', 'entry-server.js');
 
-    render = (await import("./dist/server/entry-server.js")).render;
+    console.log({
+      htmlFilePath,
+      serverFilePath
+    })
+  
+    template = await fs.readFile(htmlFilePath, "utf-8");
+
+    render = (await import(serverFilePath)).render;
 
     const rendered = await render(url);
 

@@ -17,6 +17,7 @@ const handler = async (req, res) => {
 
     let template;
     let render;
+    let manifest;
 
     // get the list of files from the current directory
     // console.log(__dirname)
@@ -32,17 +33,19 @@ const handler = async (req, res) => {
       "dist/server",
       "entry-server.js"
     );
+    const ssrManifestFilePath = join(__dirname, "..", "dist/client", "ssr-manifest.json");
 
     console.log({
       htmlFilePath,
       serverFilePath,
+      ssrManifestFilePath
     });
 
     template = await fs.readFile(htmlFilePath, "utf-8");
-
     render = (await import(serverFilePath)).render;
+    manifest = await fs.readFile(ssrManifestFilePath, "utf-8");
 
-    const rendered = await render(url);
+    const rendered = await render(url, manifest);
 
     const html = template
       .replace(`<!--app-head-->`, rendered.head ?? "")

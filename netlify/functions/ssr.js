@@ -6,9 +6,16 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 // Create server for production only
-const handler = async (req, res) => {
+const handler = async (event, context) => {
   try {
-    const url = req.url;
+    // Get the request URL
+    const requestUrl =
+      event.headers["referer"] ||
+      event.headers["origin"] ||
+      event.headers["host"];
+
+    // If you want to get the full URL including path and query parameters:
+    const url = `${requestUrl}${event.path}`;
 
     let template;
     let render;
@@ -22,7 +29,12 @@ const handler = async (req, res) => {
       "dist/server",
       "entry-server.js"
     );
-    const ssrManifestFilePath = join(__dirname, "..", "dist/client", "ssr-manifest.json");
+    const ssrManifestFilePath = join(
+      __dirname,
+      "..",
+      "dist/client",
+      "ssr-manifest.json"
+    );
 
     template = await fs.readFile(htmlFilePath, "utf-8");
     render = (await import(serverFilePath)).render;
@@ -34,16 +46,19 @@ const handler = async (req, res) => {
       .replace(`<!--app-head-->`, rendered.head ?? "")
       .replace(`<!--app-html-->`, rendered.html ?? "");
 
-    // Set headers
-    res.setHeader("Content-Type", "text/html");
-
-    res.status(200).send(html);
+    return {
+      statusCode: 200,
+      headers: {
+        "Content-Type": "text/html",
+      },
+      body: html,
+    };
   } catch (e) {
     console.log(e.stack);
     res.status(500).end(e.stack);
   }
 };
 
-export default async (req, res) => {
-  return await handler(req, res);
+export default async (event, context) => {
+  return await handler(event, context);
 };

@@ -1,5 +1,5 @@
-// app/ssr.js
+import handler from "../server.prod";
 
-export default (req, res) => {
-  res.status(200).json({ message: 'Hello from the Vercel function!' });
+export default async (req, res) => {
+  return await handler(req, res);
 };

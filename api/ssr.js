@@ -48,10 +48,12 @@ const handler = async (req, res) => {
       .replace(`<!--app-head-->`, rendered.head ?? "")
       .replace(`<!--app-html-->`, rendered.html ?? "");
 
+    console.log(rendered)
+
     // Set headers
     res.setHeader("Content-Type", "text/html");
 
-    res.status(rendered.statusCode).send(html);
+    res.status(200).send(html);
   } catch (e) {
     console.log(e.stack);
     res.status(500).end(e.stack);

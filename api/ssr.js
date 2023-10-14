@@ -3,7 +3,8 @@ import fs from "node:fs/promises";
 // Create server for production only
 const handler = async (req, res) => {
   try {
-    const url = req.originalUrl.replace("/", "/");
+    console.log(req);
+    const url = req.url;
 
     let template;
     let render;

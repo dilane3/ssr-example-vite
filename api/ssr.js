@@ -1,14 +1,14 @@
 import fs from "node:fs/promises";
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
+import { join, dirname } from "path";
+import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 console.log({
   __filename,
-  __dirname
-})
+  __dirname,
+});
 
 // Create server for production only
 const handler = async (req, res) => {
@@ -25,14 +25,19 @@ const handler = async (req, res) => {
     console.log(files);
 
     // Always read fresh template in development
-    const htmlFilePath = join(__dirname, '..', 'dist/client', 'index.html');
-    const serverFilePath = join(__dirname, '..', 'dist/server', 'entry-server.js');
+    const htmlFilePath = join(__dirname, "..", "dist/client", "index.html");
+    const serverFilePath = join(
+      __dirname,
+      "..",
+      "dist/server",
+      "entry-server.js"
+    );
 
     console.log({
       htmlFilePath,
-      serverFilePath
-    })
-  
+      serverFilePath,
+    });
+
     template = await fs.readFile(htmlFilePath, "utf-8");
 
     render = (await import(serverFilePath)).render;
@@ -43,7 +48,10 @@ const handler = async (req, res) => {
       .replace(`<!--app-head-->`, rendered.head ?? "")
       .replace(`<!--app-html-->`, rendered.html ?? "");
 
-    res.status(rendered.statusCode).set(rendered.headers).end(html);
+    // Set headers
+    res.setHeader("Content-Type", "text/html");
+
+    res.status(rendered.statusCode).send(html);
   } catch (e) {
     console.log(e.stack);
     res.status(500).end(e.stack);

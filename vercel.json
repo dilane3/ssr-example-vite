@@ -1,12 +1,12 @@
 {
   "routes": [
     {
-      "src": "/(.*)",
-      "dest": "api/ssr.js"
-    },
-    {
       "src": "/assets/(.*)",
       "dest": "client/assets/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "api/ssr.js"
     }
   ]
 }

@@ -2,25 +2,16 @@ import fs from "node:fs/promises";
 
 // Create server for production only
 const handler = async (req, res) => {
-  // Add Vite or respective production middlewares
-  let vite;
-
-  const { createServer } = await import("vite");
-  vite = await createServer({
-    server: { middlewareMode: true },
-    appType: "custom",
-    base: "/",
-  });
-
   try {
     const url = req.originalUrl.replace("/", "/");
 
     let template;
     let render;
+
     // Always read fresh template in development
-    template = await fs.readFile("../index.html", "utf-8");
-    template = await vite.transformIndexHtml(url, template);
-    render = (await vite.ssrLoadModule("/src/entry-server.tsx")).render;
+    template = await fs.readFile("/client/index.html", "utf-8");
+
+    render = (await import("/server/entry-server.js")).render;
 
     const rendered = await render(url);
 
@@ -30,7 +21,6 @@ const handler = async (req, res) => {
 
     res.status(rendered.statusCode).set(rendered.headers).end(html);
   } catch (e) {
-    vite.ssrFixStacktrace(e);
     console.log(e.stack);
     res.status(500).end(e.stack);
   }

@@ -3,6 +3,10 @@
     {
       "src": "/(.*)",
       "dest": "api/ssr.js"
+    },
+    {
+      "src": "/assets/(.*)",
+      "dest": "dist/client/assets/$1"
     }
   ]
 }
